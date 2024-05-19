@@ -8,7 +8,6 @@ public class pawn extends piece  {
         else {
             image = getImage("/piece/Tốt đen");
         }
-
     }
 
     public boolean IsPromote(int targetCol, int targetRow){
@@ -26,7 +25,8 @@ public class pawn extends piece  {
     }
 
     public boolean canMove (int currentcolor, int targetCol, int targetRow ){
-        if ( isWithinBoard( targetCol, targetRow ) ){//&& isValidSquare( targetCol , targetRow )  ){
+        if ( isWithinBoard( targetCol, targetRow ) && isValidSquare( targetCol , targetRow )  ){
+
             int moveCol = targetCol - preCol; // di chuyển ngang
             int moveRow = targetRow - preRow; // di chuyển dọc
             capturedP = getCapturedP(targetCol,targetRow);
@@ -46,13 +46,40 @@ public class pawn extends piece  {
 
             if( firstMove == 1 ){
                 if( moveCol == 0 && moveRow == 2 && capturedP==null ) { // bước lên hai bước
+                    CGPanel.enpassant=true;
+                    CGPanel.enpassantCol=targetCol;
+                    CGPanel.enpassantRow=targetRow;
+                    CGPanel.enpassantPiece=this;
+                    CGPanel.canep=false;
                     return true;
                 }
             }
             // ăn chéo
-            if( Math.abs(moveCol) == 1 && moveRow == 1 && capturedP!=null ){
-                return true;
+            if( Math.abs(moveCol) == 1 && moveRow == 1 ){
+                if( capturedP!=null ){ return true;}
+                // bắt tốt qua đường
+                if(CGPanel.enpassant==true ) {
+
+                    if (targetCol == CGPanel.enpassantCol && CGPanel.enpassantRow == targetRow - 1 && currentcolor == CGPanel.BLACK) {
+                        CGPanel.canep=true;
+                        return true;
+                    }
+                    else {
+                        if (targetCol == CGPanel.enpassantCol && CGPanel.enpassantRow == targetRow + 1 && currentcolor == CGPanel.WHITE) {
+                            CGPanel.canep=true;
+                            return true;
+                        } else {
+                            CGPanel.canep=false;
+                            CGPanel.enpassant = false;
+                            CGPanel.enpassantCol = 8;
+                            CGPanel.enpassantRow = 8;
+                            CGPanel.enpassantPiece=null;
+                        }
+                    }
+                }
+
             }
+
         }
         return false;
     }

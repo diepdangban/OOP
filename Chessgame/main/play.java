@@ -51,6 +51,9 @@ public class play {
         graphics2d.fillRect(CGPanel.HEIGHT + Board.HALF_SQUARE_SIZE,5 * Board.HALF_SQUARE_SIZE,4 * Board.SQUARE_SIZE, 5 * Board.SQUARE_SIZE );
         graphics2d.setColor(new Color(170, 209, 223) );
         graphics2d.drawRect(CGPanel.HEIGHT + Board.HALF_SQUARE_SIZE,5 * Board.HALF_SQUARE_SIZE,4 * Board.SQUARE_SIZE, 5 * Board.SQUARE_SIZE );
+//        graphics2d.drawString("Last move :" + CGPanel.lastcol + CGPanel.lastrow + " -> " + CGPanel.newcol + CGPanel.newrow   ,  CGPanel.HEIGHT + Board.HALF_SQUARE_SIZE * 3   ,  Board.SQUARE_SIZE + 40 );
+
+
     }
 
 }

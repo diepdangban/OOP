@@ -13,6 +13,8 @@ abstract class piece {
     public int preRow;
     public piece capturedP;
     public piece blockedP;
+    public boolean moved = false;
+    public boolean promote = false;
 
     public piece(int color, int col, int row){
         this.color=color;
@@ -56,6 +58,7 @@ abstract class piece {
         }
         return 0;
     }
+
 
     public void updatePosition(){
         this.x=getX(col);

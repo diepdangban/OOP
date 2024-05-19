@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.awt.Component ;
 
 public class CGPanel extends JPanel implements Runnable {
     public static final int HEIGHT = Board.SQUARE_SIZE*8;
@@ -19,10 +20,26 @@ public class CGPanel extends JPanel implements Runnable {
     boolean canMove;
     boolean validSquare;
 
+    //bắt tốt qua đường
+
+    public static boolean enpassant = false;
+    public static int enpassantCol=8;
+    public static int enpassantRow=8;
+    public static boolean canep=false;
+
     //quân cờ
     public static ArrayList<piece> Pieces = new ArrayList<>();
     public static ArrayList<piece> simPieces = new ArrayList<>();
+    static ArrayList<piece> promotePieces = new ArrayList<>();
     piece activeP;
+    static piece rookC;
+    static piece enpassantPiece=null;
+    public static boolean promotion=false;
+
+    public static String lastcol;
+    public static String lastrow;
+    public static String newcol;
+    public static String newrow;
 
     public CGPanel(){
         setPreferredSize(new Dimension(WIDTH,HEIGHT));
@@ -111,46 +128,69 @@ public class CGPanel extends JPanel implements Runnable {
     }
 
     // phương thức update để cập nhật bước di chuyển của quân cờ
-    public void update(){
+    public void update() {
+        if (promotion) {
+            promoting();
 
-        if(mouse.pressed){
-            if( this.activeP == null ){ // nếu chưa đc chọn, ktra xem có chọn đc quân cờ này không
-                for (piece Piece : simPieces){
-                    if( Piece.color == currentcolor && Piece.col==mouse.x/Board.SQUARE_SIZE && Piece.row==mouse.y/ Board.SQUARE_SIZE  ){
-                        activeP = Piece;
+        }
+        else {
+            if (mouse.pressed) {
+                if (this.activeP == null) { // nếu chưa đc chọn, ktra xem có chọn đc quân cờ này không
+                    for (piece Piece : simPieces) {
+                        if (Piece.color == currentcolor && Piece.col == mouse.x / Board.SQUARE_SIZE && Piece.row == mouse.y / Board.SQUARE_SIZE) {
+                            activeP = Piece;
+                        }
                     }
+                } else {//nếu đang chọn quân cờ , simulate the move;
+                    simulate();
                 }
             }
-            else{//nếu đang chọn quân cờ , simulate the move;
-                simulate();
+            if (mouse.pressed == false) {
+                if (activeP != null) {
+                    if (validSquare) {
+                        copyPieces(simPieces, Pieces);
+                        activeP.updatePosition();
+                        activeP.moved = true;
+
+                        Castling();
+                        enPassant();
+
+                        if (activeP.promote == true) {
+                            promotePieces.clear();
+                            promotePieces.add(new rook(currentcolor, 9, 2));
+                            promotePieces.add(new knight(currentcolor, 9, 3));
+                            promotePieces.add(new bishop(currentcolor, 9, 4));
+                            promotePieces.add(new queen(currentcolor, 9, 5));
+                            promotion = true;
+                        }
+
+                        activeP = null;
+                        // đổi lượt
+                        if (currentcolor == WHITE) {
+                            currentcolor = BLACK;
+                            System.out.println("BLACK's turn");
+                        } else {
+                            currentcolor = WHITE;
+                            System.out.println("WHITE's turn");
+                        }
+                    } else {
+                        copyPieces(Pieces, simPieces);
+                        activeP.resetPosition();
+                        activeP = null;
+                    }
+                }
             }
         }
-        if(mouse.pressed == false){
-            if(activeP != null){
-                if(validSquare){
-                    //move
+    }
 
-                    copyPieces(simPieces,Pieces);
-                    activeP.updatePosition();
-                    activeP = null;
-
-                    if ( currentcolor == WHITE ){
-                        currentcolor = BLACK;
-                        System.out.println("BLACK's turn");
-                    }
-                    else{
-                        currentcolor = WHITE;
-                        System.out.println("WHITE's turn");
-                    }
-
-                }
-                else{
-                    copyPieces(Pieces,simPieces);
-                    activeP.resetPosition();
-                    activeP = null;
-                }
-            }
+    private void enPassant( ) {
+        if(enpassantPiece!=null&&canep==true) {
+            simPieces.remove(enpassantPiece.getIndex());
+            copyPieces(simPieces, Pieces);
         }
+    }
+
+    private void promoting() {
     }
 
     private void simulate(){
@@ -175,6 +215,23 @@ public class CGPanel extends JPanel implements Runnable {
         }
     }
 
+    // nhập thành
+    public boolean Castling (){
+        if(CGPanel.rookC!=null){
+            if(CGPanel.rookC.col==0){
+                CGPanel.rookC.col=3;
+                CGPanel.rookC.x=CGPanel.rookC.getX(CGPanel.rookC.col);
+            }
+            if(CGPanel.rookC.col==7){
+                CGPanel.rookC.col=5;
+                CGPanel.rookC.x=CGPanel.rookC.getX(CGPanel.rookC.col);
+            }
+            CGPanel.rookC.updatePosition();
+            return true;
+        }
+        return false;
+    }
+
     // paint component để thêm các đối tượng ( quân cờ , ...) vào màn hình
     public void paintComponent( Graphics graphic ){
         super.paintComponent(graphic);
@@ -184,7 +241,14 @@ public class CGPanel extends JPanel implements Runnable {
         //board
         board.draw(graphics2d);
         play.drawmenu(graphics2d);
-
+        //if(CGPanel.promotion ){
+            Font font2 = new Font("Serif", Font.PLAIN, 25); // chỉnh lại cỡ chữ
+            graphics2d.setFont(font2);
+            graphics2d.drawString("Promote to :",(9)*Board.SQUARE_SIZE,Board.SQUARE_SIZE*4);
+            for (piece p : CGPanel.promotePieces) {
+            graphics2d.drawImage(p.image,p.getX(p.col),p.getY(p.row),Board.SQUARE_SIZE,Board.SQUARE_SIZE,null);
+        }
+        //}
         //pieces
         for (piece p : simPieces) { p.draw(graphics2d);}
         if (activeP != null) {
@@ -195,7 +259,17 @@ public class CGPanel extends JPanel implements Runnable {
                 graphics2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
             }
             activeP.draw(graphics2d);
+
         }
+        else{
+            if(Castling()){
+                CGPanel.rookC.draw(graphics2d);
+                CGPanel.rookC=null;
+            }
+        }
+
+
+        // phong tốt
 
     }
 }
