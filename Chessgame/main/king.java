@@ -1,15 +1,17 @@
-public class king extends piece {
-    public king(int color, int col, int row) {
-        super(color, col, row);
+public class king extends piece  {
+    public king(int color, int col, int row){
+        super(color,col,row);
 
-        if (color == Panel.WHITE) {
+        if(color == CGPanel.WHITE){
             image = getImage("/piece/Vua trắng");
-        } else {
+        }
+        else {
             image = getImage("/piece/Vua đen");
         }
     }
+
     @Override
-    public boolean canMove (  int targetCol, int targetRow ){
+    public boolean canMove ( int currentcolor, int targetCol, int targetRow ){
 
 //        if ( isWithinBoard( targetCol, targetRow ) && isValidSquare( targetCol , targetRow ) ){
         int moveCol = Math.abs( targetCol - preCol);
@@ -18,6 +20,7 @@ public class king extends piece {
             return true;
         }
 //        }
-        return true;
+        return false;
     }
+
 }

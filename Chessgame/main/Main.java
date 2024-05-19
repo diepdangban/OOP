@@ -7,14 +7,13 @@ public class Main {
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setResizable(false);
 
-        Panel gamepanel = new Panel();
-        window.add(gamepanel);
+        CGPanel panel = new CGPanel();
+        window.add(panel);
         window.pack();
 
         window.setLocationRelativeTo(null);
         window.setVisible(true);
 
-        gamepanel.launchGame();
-
+        panel.launchGame();
     }
 }
